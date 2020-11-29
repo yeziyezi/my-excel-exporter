@@ -1,0 +1,10 @@
+{
+  "driver": "mysql",
+  "username": "root",
+  "password": "",
+  "host": "localhost",
+  "port": "3306",
+  "schema": "test",
+  "listTabName":"表清单",
+  "excelPath":"%USERPROFILE%\\Desktop"
+}
