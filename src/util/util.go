@@ -12,14 +12,15 @@ import (
 //https://github.com/go-sql-driver/mysql/wiki/Examples
 //https://www.xiexiaodong7.com/archives/17
 type Config struct {
-	Driver      string `json:"driver"`
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	Host        string `json:"host"`
-	Port        string `json:"port"`
-	Schema      string `json:"schema"`
-	ListTabName string `json:"listTabName"` //第一个tab用于存放表名清单
-	ExcelPath   string `json:"excelPath"`
+	Driver       string `json:"driver"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	Host         string `json:"host"`
+	Port         string `json:"port"`
+	Schema       string `json:"schema"`
+	ListTabName  string `json:"listTabName"` //第一个tab用于存放表名清单
+	ExcelPath    string `json:"excelPath"`
+	TableColName string `json:"tableColName"` //表名列的列名
 }
 
 func ReadConfig(path string) *Config {

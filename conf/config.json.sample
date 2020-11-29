@@ -6,5 +6,6 @@
   "port": "3306",
   "schema": "test",
   "listTabName":"表清单",
-  "excelPath":"%USERPROFILE%\\Desktop"
+  "excelPath":"%USERPROFILE%\\Desktop",
+  "tableColName": "表名"
 }
