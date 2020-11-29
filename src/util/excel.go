@@ -23,12 +23,9 @@ func NewExcelUtil(filePath string) *ExcelUtil {
 func (eu *ExcelUtil) NewSheet(sheetName string, columnNames []string, rows [][]string) {
 	eu.mu.Lock()
 	defer eu.mu.Unlock()
-	sheetIndex := eu.excel.NewSheet(sheetName)
 	//如果index是2，则是除了默认的Sheet1之外新建的第一个Sheet
-	//把Sheet1删掉同时将这个Sheet置为默认显示Sheet
-	if sheetIndex == 2 {
+	if eu.excel.NewSheet(sheetName) == 2 {
 		eu.excel.DeleteSheet("Sheet1")
-		eu.excel.SetActiveSheet(sheetIndex)
 	}
 	maxColStrLen := map[rune]int{}
 
@@ -40,6 +37,7 @@ func (eu *ExcelUtil) NewSheet(sheetName string, columnNames []string, rows [][]s
 	for i, row := range rows {
 		for j, s := range row {
 			eu.excel.SetCellValue(sheetName, string(rune('A'+j))+strconv.Itoa(i+2), s)
+			//统计这一列中字符串长度的最大值
 			if v, ok := maxColStrLen[rune('A'+j)]; !ok || v < len(s) {
 				maxColStrLen[rune('A'+j)] = len(s)
 			}
@@ -54,5 +52,6 @@ func (eu *ExcelUtil) NewSheet(sheetName string, columnNames []string, rows [][]s
 func (eu *ExcelUtil) Save() {
 	eu.mu.Lock()
 	defer eu.mu.Unlock()
+	eu.excel.SetActiveSheet(2)
 	PanicIfErr(eu.excel.SaveAs(eu.filePath))
 }
