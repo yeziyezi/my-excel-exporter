@@ -23,8 +23,11 @@ func main() {
 	tableListQuery := util.NewQuery(cwd+"/conf/tables.sql", db)
 	tableListRows := tableListQuery.QueryAll(config.Schema)
 
-	e := util.NewExcelUtil(config.ExcelPath)
+	leu := util.NewTableListSheetExcelUtil(config.ExcelPath, config.ListTabName,
+		tableListQuery.GetColumnNames(), config.TableColName)
+	e := leu.GetExcelUtil()
 	e.NewSheet(config.ListTabName, tableListQuery.GetColumnNames(), tableListRows)
+	leu.SetHyperLinksToTableSheet()
 
 	query := util.NewQuery(cwd+"/conf/table-struct.sql", db)
 
