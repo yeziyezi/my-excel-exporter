@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"io/ioutil"
 	"strings"
+	"sync"
 )
 
 type QueryUtil struct {
@@ -11,6 +12,7 @@ type QueryUtil struct {
 	buf         []*[]byte
 	iBuf        []interface{}
 	columnNames []string //列名的别名或者列名，取决于查询是否使用了AS
+	mu          sync.Mutex
 }
 
 func readStringFromFile(sqlFilePath string) string {
@@ -47,6 +49,7 @@ func NewQuery(sqlFilePath string, db *sql.DB) *QueryUtil {
 		buf:         buf,
 		iBuf:        iBuf,
 		columnNames: columnNames,
+		mu:          sync.Mutex{},
 	}
 }
 
@@ -63,6 +66,9 @@ func (qu *QueryUtil) QueryAndMap(mapper func([]string), param ...interface{}) {
 	rows, err := qu.stmt.Query(param...)
 	PanicIfErr(err)
 
+	//buf是非线程安全的，需要加锁
+	qu.mu.Lock()
+	defer qu.mu.Unlock()
 	//从结果集中取每一行读取到buf中，然后调用f函数进行处理
 	for rows.Next() {
 		//its中的元素均为buf元素的指针，数据可直接从buf中取到
