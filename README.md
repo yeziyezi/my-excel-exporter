@@ -12,3 +12,6 @@
 ##### todo 完善注释
 ##### todo 完善readme
 ##### todo 打zip包作为release
+## 参考资料
+- **excelize官方文档** https://xuri.me/excelize/zh-hans/
+- **go-sql-driver** https://github.com/go-sql-driver/mysq
