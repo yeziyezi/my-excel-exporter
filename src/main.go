@@ -25,7 +25,7 @@ func main() {
 	listRows := listQuery.QueryAll(config.Schema)
 
 	e := util.NewExcelUtil(config, listQuery.GetColumnNames(), tableQuery.GetColumnNames())
-	e.NewSheet(config.ListTabName, listRows)
+	e.NewSheet(config.ListSheetName, listRows)
 
 	var tableNames []string
 	for _, row := range listRows {

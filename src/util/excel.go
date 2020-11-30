@@ -75,7 +75,7 @@ func NewExcelUtil(config *Config, listSheetCols []string, tableSheetCols []strin
 		excel:                 excel,
 		mu:                    sync.Mutex{},
 		filePath:              config.ExcelPath,
-		tableListSheetName:    config.ListTabName,
+		tableListSheetName:    config.ListSheetName,
 		tableNameColIndex:     tableNameColIndex,
 		tableNameColCharIndex: string(rune('A' + tableNameColIndex)),
 		hyperLinkStyleId:      styleId,
