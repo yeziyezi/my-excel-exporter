@@ -8,9 +8,8 @@ import (
 )
 
 type newSheetParam struct {
-	tableName   string
-	columnNames []string
-	rows        [][]string
+	tableName string
+	rows      [][]string
 }
 
 func main() {
@@ -20,37 +19,38 @@ func main() {
 	db := util.GetDB(config)
 	defer func() { _ = db.Close() }()
 
-	tableListQuery := util.NewQuery(cwd+"/conf/tables.sql", db)
-	tableListRows := tableListQuery.QueryAll(config.Schema)
+	listQuery := util.NewQuery(cwd+"/conf/tables.sql", db)
+	tableQuery := util.NewQuery(cwd+"/conf/table-struct.sql", db)
 
-	e := util.NewExcelUtil(config.ExcelPath, config.ListTabName,
-		tableListQuery.GetColumnNames(), config.TableColName)
-	e.NewSheet(config.ListTabName, tableListQuery.GetColumnNames(), tableListRows)
-	e.SetHyperLinksToTableSheet()
+	listRows := listQuery.QueryAll(config.Schema)
 
-	query := util.NewQuery(cwd+"/conf/table-struct.sql", db)
+	e := util.NewExcelUtil(config, listQuery.GetColumnNames(), tableQuery.GetColumnNames())
+	e.NewSheet(config.ListTabName, listRows)
 
 	var tableNames []string
-	for _, row := range tableListRows {
+	for _, row := range listRows {
 		tableNames = append(tableNames, row[0])
 	}
 	c := make(chan newSheetParam)
 	for _, tableName := range tableNames {
 		tableName := tableName
 		go func() {
-			rows := query.QueryAll(config.Schema, tableName)
-			c <- newSheetParam{tableName: tableName, columnNames: query.GetColumnNames(), rows: rows}
+			rows := tableQuery.QueryAll(config.Schema, tableName)
+			c <- newSheetParam{tableName: tableName, rows: rows}
 			fmt.Println(tableName + "...ok")
 		}()
 	}
 	for range tableNames {
 		nsp := <-c
-		e.NewSheet(nsp.tableName, nsp.columnNames, nsp.rows)
+		e.NewSheet(nsp.tableName, nsp.rows)
 	}
 
 	fmt.Printf("%d tables done\n", len(tableNames))
+	fmt.Print("setting hyperlinks...")
+	e.SetHyperLinksInListSheet()
+	e.SetHyperLinksInTableSheets()
+	fmt.Println("ok")
 	fmt.Printf("writing into %s...", config.ExcelPath)
-	e.SetHyperLinksToTableList()
 	e.Save()
 	fmt.Println("success")
 }

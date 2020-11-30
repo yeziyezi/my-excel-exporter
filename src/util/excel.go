@@ -8,18 +8,19 @@ import (
 	"sync"
 )
 
+//ExcelUtil 封装好的Excel工具类
 type ExcelUtil struct {
-	excel    *excelize.File
-	filePath string
-	mu       sync.Mutex
-
-	tableListSheetName    string //表清单页的sheet名
-	tableNameColCharIndex string //表名列的列号 如"A"
-	tableNameColIndex     int    //表名列的列数 如0
-	hyperLinkStyleId      int    //超链接样式id
+	excel                 *excelize.File
+	mu                    sync.Mutex
+	filePath              string   //保存excel文件的路径
+	tableListSheetName    string   //表清单页的sheet名
+	tableNameColCharIndex string   //表清单sheet中表名列的excel列号 如"A"
+	tableNameColIndex     int      //表清单sheet中表名列的数字列号 如0
+	hyperLinkStyleId      int      //超链接样式id
+	tableSheetCols        []string //表字段sheet的列名数组
 }
 
-func (eu *ExcelUtil) NewSheet(sheetName string, columnNames []string, rows [][]string) {
+func (eu *ExcelUtil) NewSheet(sheetName string, rows [][]string) {
 	eu.mu.Lock()
 	defer eu.mu.Unlock()
 	//如果index是2，则是除了默认的Sheet1之外新建的第一个Sheet
@@ -28,7 +29,7 @@ func (eu *ExcelUtil) NewSheet(sheetName string, columnNames []string, rows [][]s
 	}
 	maxColStrLen := map[rune]int{}
 
-	for i, name := range columnNames {
+	for i, name := range eu.tableSheetCols {
 		//列宽首先考虑字段名
 		eu.excel.SetCellValue(sheetName, string(rune('A'+i))+"1", name)
 		maxColStrLen[rune('A'+i)] = len(name)
@@ -56,35 +57,35 @@ func (eu *ExcelUtil) Save() {
 	PanicIfErr(eu.excel.SaveAs(eu.filePath))
 }
 
-//ColNames 表清单sheet的列名
-//tableColName 表名列的列名
-func NewExcelUtil(filePath string, tableListSheetName string, ColNames []string, tableColName string) *ExcelUtil {
+//@param config *Config 配置项
+func NewExcelUtil(config *Config, listSheetCols []string, tableSheetCols []string) *ExcelUtil {
 	excel := excelize.NewFile()
 	tableNameColIndex := func() int {
-		for i := 0; i < len(ColNames); i++ {
-			if ColNames[i] == tableColName {
+		for i := 0; i < len(listSheetCols); i++ {
+			if listSheetCols[i] == config.TableColName {
 				return i
 			}
 		}
-		panic(fmt.Sprintf("%s does not exist in %s", tableColName, ColNames))
+		panic(fmt.Sprintf("%s does not exist in %s", config.TableColName, listSheetCols))
 	}()
 	//预设超链接样式
 	styleId, err := excel.NewStyle(`{"font":{"underline":"single","color":"#0066CC"}}`)
 	PanicIfErr(err)
 	return &ExcelUtil{
 		excel:                 excel,
-		filePath:              filePath,
 		mu:                    sync.Mutex{},
-		tableListSheetName:    tableListSheetName,
+		filePath:              config.ExcelPath,
+		tableListSheetName:    config.ListTabName,
 		tableNameColIndex:     tableNameColIndex,
 		tableNameColCharIndex: string(rune('A' + tableNameColIndex)),
 		hyperLinkStyleId:      styleId,
+		tableSheetCols:        tableSheetCols,
 	}
 }
 
 //列表页设置跳转到表的超链接
 //columnName是表名所在的列名，即sql文件里设置的别名或字段名
-func (eu *ExcelUtil) SetHyperLinksToTableSheet() {
+func (eu *ExcelUtil) SetHyperLinksInListSheet() {
 	excel := eu.excel
 	rows, err := excel.Rows(eu.tableListSheetName)
 	PanicIfErr(err)
@@ -113,7 +114,7 @@ func (eu *ExcelUtil) SetHyperLinksToTableSheet() {
 }
 
 //各个表设置跳转到表清单sheet的超链接
-func (eu *ExcelUtil) SetHyperLinksToTableList() {
+func (eu *ExcelUtil) SetHyperLinksInTableSheets() {
 	excel := eu.excel
 	for _, sheetName := range excel.GetSheetMap() {
 		if sheetName == eu.tableListSheetName {
