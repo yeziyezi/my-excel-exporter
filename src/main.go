@@ -23,11 +23,10 @@ func main() {
 	tableListQuery := util.NewQuery(cwd+"/conf/tables.sql", db)
 	tableListRows := tableListQuery.QueryAll(config.Schema)
 
-	leu := util.NewTableListSheetExcelUtil(config.ExcelPath, config.ListTabName,
+	e := util.NewExcelUtil(config.ExcelPath, config.ListTabName,
 		tableListQuery.GetColumnNames(), config.TableColName)
-	e := leu.GetExcelUtil()
 	e.NewSheet(config.ListTabName, tableListQuery.GetColumnNames(), tableListRows)
-	leu.SetHyperLinksToTableSheet()
+	e.SetHyperLinksToTableSheet()
 
 	query := util.NewQuery(cwd+"/conf/table-struct.sql", db)
 
@@ -51,7 +50,7 @@ func main() {
 
 	fmt.Printf("%d tables done\n", len(tableNames))
 	fmt.Printf("writing into %s...", config.ExcelPath)
-	leu.SetHyperLinksToTableList()
+	e.SetHyperLinksToTableList()
 	e.Save()
 	fmt.Println("success")
 }

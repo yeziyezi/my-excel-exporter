@@ -40,15 +40,11 @@ func GetDB(config *Config) *sql.DB {
 	confString := fmt.Sprintf("%s:%s@(%s:%s)/%s",
 		config.Username, config.Password, config.Host, config.Port, config.Schema)
 	db, err := sql.Open(config.Driver, confString)
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 	db.SetConnMaxLifetime(time.Minute * 3)
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(10)
 	err = db.Ping()
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 	return db
 }
