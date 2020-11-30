@@ -46,7 +46,8 @@ func (eu *ExcelUtil) NewSheet(sheetName string, columnNames []string, rows [][]s
 
 	//设置列宽防止显示不完整
 	for col, strLen := range maxColStrLen {
-		eu.excel.SetColWidth(sheetName, string(col), string(col), math.Max(float64(strLen)*1.3, 10.0))
+		eu.excel.SetColWidth(sheetName, string(col), string(col),
+			math.Max(float64(strLen)*1.3, 10.0))
 	}
 }
 func (eu *ExcelUtil) Save() {

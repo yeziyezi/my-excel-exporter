@@ -51,6 +51,7 @@ func main() {
 
 	fmt.Printf("%d tables done\n", len(tableNames))
 	fmt.Printf("writing into %s...", config.ExcelPath)
+	leu.SetHyperLinksToTableList()
 	e.Save()
 	fmt.Println("success")
 }

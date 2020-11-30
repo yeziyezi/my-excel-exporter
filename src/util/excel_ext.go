@@ -50,3 +50,16 @@ func (teu *TableListSheetExcelUtil) SetHyperLinksToTableSheet() {
 		rowNum++
 	}
 }
+
+//各个表设置跳转到表清单sheet的超链接
+func (teu *TableListSheetExcelUtil) SetHyperLinksToTableList() {
+	excel := teu.e.excel
+	for _, sheetName := range excel.GetSheetMap() {
+		if sheetName == teu.tableListSheetName {
+			continue
+		}
+		excel.SetCellHyperLink(sheetName, "A1", teu.tableListSheetName+"!A1", "Location")
+		cellValue := excel.GetCellValue(sheetName, "A1")
+		excel.SetCellValue(sheetName, "A1", cellValue+"(回到首页)")
+	}
+}

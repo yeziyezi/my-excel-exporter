@@ -3,7 +3,7 @@
 ##### todo 调整表格输出的样式
 - <del>根据字段长度调整行宽</del>
 - <del>首个sheet增加跳转到其他sheet的链接</del>
-- 增加其他sheet跳回首页的超链接
+- <del>增加其他sheet跳回首页的超链接</del>
 - 给超链接增加蓝色带下划线的style
 ##### todo 优化代码
 - 将excel的某些方法的参数改为直接传入Config对象
