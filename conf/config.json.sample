@@ -7,5 +7,22 @@
   "schema": "test",
   "listSheetName":"表清单",
   "excelPath":"%USERPROFILE%\\Desktop",
-  "tableColName": "表名"
+  "tableColName": "表名",
+  "style": {
+      "hyperLinkStyle": {
+        "font": {
+          "underline": "single",
+          "color": "#0066CC"
+        }
+      },
+      "hyperLinkTitleStyle": {
+        "font": {
+          "underline": "single",
+          "color": "#0066CC"
+        },
+        "alignment": {
+          "horizontal": "center"
+        }
+      }
+    }
 }
