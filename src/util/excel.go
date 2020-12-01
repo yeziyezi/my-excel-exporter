@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"math"
@@ -108,29 +109,9 @@ func (eu *ExcelUtil) End() {
 //@param tableSheetCols []string 表结构sheet列名
 func NewExcelUtil(config *Config, listSheetCols []string, tableSheetCols []string) *ExcelUtil {
 	excel := excelize.NewFile()
-	tableNameColIndex := func() int {
-		for i := 0; i < len(listSheetCols); i++ {
-			if listSheetCols[i] == config.TableColName {
-				return i
-			}
-		}
-		panic(fmt.Sprintf("%s does not exist in %s", config.TableColName, listSheetCols))
-	}()
-	//预设超链接样式
-	hyperLinkStyleId, err := excel.NewStyle(`{"font":{"underline":"single","color":"#0066CC"}}`)
-	hyperLinkTitleStyleId, err := excel.NewStyle(`
-{
-    "font": {
-        "underline": "single",
-        "color": "#0066CC"
-    },
-    "alignment": {
-        "horizontal": "center"
-    }
-}
-`)
+	tableNameColIndex := getStringIndex(config.TableColName, listSheetCols)
+	hyperLinkStyleId, hyperLinkTitleStyleId := initStyle(excel, config)
 
-	PanicIfErr(err)
 	return &ExcelUtil{
 		excel:                 excel,
 		mu:                    sync.Mutex{},
@@ -145,6 +126,26 @@ func NewExcelUtil(config *Config, listSheetCols []string, tableSheetCols []strin
 		tableSheetMap:         map[string]string{},
 		listSheetCols:         listSheetCols,
 	}
+}
+func getStringIndex(s string, arr []string) int {
+	for i := 0; i < len(arr); i++ {
+		if arr[i] == s {
+			return i
+		}
+	}
+	panic(fmt.Errorf("%s does not exist in %s", s, arr))
+}
+func initStyle(excel *excelize.File, config *Config) (hyperLinkStyleId, hyperLinkTitleStyleId int) {
+	//预设超链接样式
+	hyperLinkStyle, err := json.Marshal(config.Style["hyperLinkStyle"])
+	PanicIfErr(err)
+	hyperLinkTitleStyle, err := json.Marshal(config.Style["hyperLinkTitleStyle"])
+	PanicIfErr(err)
+	hyperLinkStyleId, err = excel.NewStyle(string(hyperLinkStyle))
+	PanicIfErr(err)
+	hyperLinkTitleStyleId, err = excel.NewStyle(string(hyperLinkTitleStyle))
+	PanicIfErr(err)
+	return
 }
 
 //列表页设置跳转到表的超链接
