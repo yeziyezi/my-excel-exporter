@@ -90,11 +90,17 @@ func (eu *ExcelUtil) NewSheet(name string, rows [][]string) {
 			math.Max(float64(strLen)*1.3, 10.0))
 	}
 }
-func (eu *ExcelUtil) Save() {
+func (eu *ExcelUtil) End() {
 	eu.mu.Lock()
 	defer eu.mu.Unlock()
-	eu.excel.SetActiveSheet(2)
-	PanicIfErr(eu.excel.SaveAs(eu.filePath))
+	//设置超链接
+	eu.setHyperLinksInTableSheets()
+	eu.setHyperLinksInListSheet()
+	//设置默认sheet为表清单
+	eu.excel.SetActiveSheet(eu.excel.GetSheetIndex(eu.tableListSheetName))
+	//保存
+	err := eu.excel.SaveAs(eu.filePath)
+	PanicIfErr(err)
 }
 
 //@param config *Config 配置项
@@ -142,14 +148,11 @@ func NewExcelUtil(config *Config, listSheetCols []string, tableSheetCols []strin
 }
 
 //列表页设置跳转到表的超链接
-func (eu *ExcelUtil) SetHyperLinksInListSheet() {
-	eu.mu.Lock()
-	defer eu.mu.Unlock()
-
+func (eu *ExcelUtil) setHyperLinksInListSheet() {
 	excel := eu.excel
 	rows, err := excel.Rows(eu.tableListSheetName)
 	PanicIfErr(err)
-
+	//如果一行都没则不处理
 	//第一行是列名，不设置超链接
 	if !rows.Next() {
 		return
@@ -159,7 +162,6 @@ func (eu *ExcelUtil) SetHyperLinksInListSheet() {
 		tableName := rows.Columns()[eu.tableNameColIndex]
 		axis := eu.tableNameColCharIndex + strconv.Itoa(rowNum)
 		link := eu.tableSheetMap[tableName] + "!A1"
-
 		excel.SetCellHyperLink(eu.tableListSheetName, axis, link, "Location")
 		excel.SetCellStyle(eu.tableListSheetName, axis, axis, eu.hyperLinkStyleId)
 		rowNum++
@@ -167,9 +169,7 @@ func (eu *ExcelUtil) SetHyperLinksInListSheet() {
 }
 
 //各个表设置跳转到表清单sheet的超链接
-func (eu *ExcelUtil) SetHyperLinksInTableSheets() {
-	eu.mu.Lock()
-	defer eu.mu.Unlock()
+func (eu *ExcelUtil) setHyperLinksInTableSheets() {
 	excel := eu.excel
 	for _, sheetName := range excel.GetSheetMap() {
 		if sheetName == eu.tableListSheetName {
@@ -178,7 +178,7 @@ func (eu *ExcelUtil) SetHyperLinksInTableSheets() {
 		hyperLinkSheetName := sheetName[0:int(math.Min(float64(len(sheetName)), 31))]
 		excel.SetCellHyperLink(hyperLinkSheetName, "A1", eu.tableListSheetName+"!A1", "Location")
 		cellValue := excel.GetCellValue(sheetName, "A1")
-		excel.SetCellValue(sheetName, "A1", cellValue+"(回到首页)")
+		excel.SetCellValue(sheetName, "A1", cellValue+"(返回列表)")
 		excel.SetCellStyle(sheetName, "A1", "A1", eu.hyperLinkTitleStyleId)
 		excel.MergeCell(sheetName, "A1", string(rune('A'+len(eu.tableSheetCols)-1))+"1")
 	}

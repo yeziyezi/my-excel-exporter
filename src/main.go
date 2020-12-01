@@ -46,11 +46,7 @@ func main() {
 	}
 
 	fmt.Printf("%d tables done\n", len(tableNames))
-	fmt.Print("setting hyperlinks...")
-	e.SetHyperLinksInListSheet()
-	e.SetHyperLinksInTableSheets()
-	fmt.Println("ok")
 	fmt.Printf("writing into %s...", config.ExcelPath)
-	e.Save()
+	e.End()
 	fmt.Println("success")
 }
