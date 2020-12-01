@@ -14,7 +14,7 @@ type ExcelUtil struct {
 	excel                 *excelize.File
 	mu                    sync.Mutex
 	filePath              string            //保存excel文件的路径
-	tableListSheetName    string            //表清单页的sheet名
+	listSheetName         string            //表清单页的sheet名
 	tableNameColCharIndex string            //表清单sheet中表名列的excel列号 如"A"
 	tableNameColIndex     int               //表清单sheet中表名列的数字列号 如0
 	hyperLinkStyleId      int               //超链接样式id
@@ -32,7 +32,7 @@ func (eu *ExcelUtil) NewSheet(name string, rows [][]string) {
 	var tableName string
 	var sheetName string
 
-	isListSheet := name == eu.tableListSheetName
+	isListSheet := name == eu.listSheetName
 	//判断是否为表清单sheet
 	if isListSheet {
 		sheetName = name
@@ -98,7 +98,7 @@ func (eu *ExcelUtil) End() {
 	eu.setHyperLinksInTableSheets()
 	eu.setHyperLinksInListSheet()
 	//设置默认sheet为表清单
-	eu.excel.SetActiveSheet(eu.excel.GetSheetIndex(eu.tableListSheetName))
+	eu.excel.SetActiveSheet(eu.excel.GetSheetIndex(eu.listSheetName))
 	//保存
 	err := eu.excel.SaveAs(eu.filePath)
 	PanicIfErr(err)
@@ -116,7 +116,7 @@ func NewExcelUtil(config *Config, listSheetCols []string, tableSheetCols []strin
 		excel:                 excel,
 		mu:                    sync.Mutex{},
 		filePath:              config.ExcelPath,
-		tableListSheetName:    config.ListSheetName,
+		listSheetName:         config.ListSheetName,
 		tableNameColIndex:     tableNameColIndex,
 		tableNameColCharIndex: string(rune('A' + tableNameColIndex)),
 		hyperLinkStyleId:      hyperLinkStyleId,
@@ -151,7 +151,7 @@ func initStyle(excel *excelize.File, config *Config) (hyperLinkStyleId, hyperLin
 //列表页设置跳转到表的超链接
 func (eu *ExcelUtil) setHyperLinksInListSheet() {
 	excel := eu.excel
-	rows, err := excel.Rows(eu.tableListSheetName)
+	rows, err := excel.Rows(eu.listSheetName)
 	PanicIfErr(err)
 	//如果一行都没则不处理
 	//第一行是列名，不设置超链接
@@ -163,8 +163,8 @@ func (eu *ExcelUtil) setHyperLinksInListSheet() {
 		tableName := rows.Columns()[eu.tableNameColIndex]
 		axis := eu.tableNameColCharIndex + strconv.Itoa(rowNum)
 		link := eu.tableSheetMap[tableName] + "!A1"
-		excel.SetCellHyperLink(eu.tableListSheetName, axis, link, "Location")
-		excel.SetCellStyle(eu.tableListSheetName, axis, axis, eu.hyperLinkStyleId)
+		excel.SetCellHyperLink(eu.listSheetName, axis, link, "Location")
+		excel.SetCellStyle(eu.listSheetName, axis, axis, eu.hyperLinkStyleId)
 		rowNum++
 	}
 }
@@ -172,12 +172,28 @@ func (eu *ExcelUtil) setHyperLinksInListSheet() {
 //各个表设置跳转到表清单sheet的超链接
 func (eu *ExcelUtil) setHyperLinksInTableSheets() {
 	excel := eu.excel
+	listSheetRows := excel.GetRows(eu.listSheetName)
+	tableNameColStrIndex := string(rune('A' + eu.tableNameColIndex))
+
 	for _, sheetName := range excel.GetSheetMap() {
-		if sheetName == eu.tableListSheetName {
+		if sheetName == eu.listSheetName {
 			continue
 		}
-		hyperLinkSheetName := sheetName[0:int(math.Min(float64(len(sheetName)), 31))]
-		excel.SetCellHyperLink(hyperLinkSheetName, "A1", eu.tableListSheetName+"!A1", "Location")
+		//定位表结构sheet对应的tableName在表清单sheet的行号
+		var tableRowIndex int
+		for i, row := range listSheetRows {
+			//跳过列名
+			if i == 0 {
+				continue
+			}
+			tableName := row[eu.tableNameColIndex]
+			if v, ok := eu.tableSheetMap[tableName]; ok && v == sheetName {
+				tableRowIndex = i + 1
+				break
+			}
+		}
+		link := eu.listSheetName + "!" + tableNameColStrIndex + strconv.Itoa(tableRowIndex)
+		excel.SetCellHyperLink(sheetName, "A1", link, "Location")
 		cellValue := excel.GetCellValue(sheetName, "A1")
 		excel.SetCellValue(sheetName, "A1", cellValue+"(返回列表)")
 		excel.SetCellStyle(sheetName, "A1", "A1", eu.hyperLinkTitleStyleId)
