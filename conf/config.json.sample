@@ -6,7 +6,7 @@
   "port": "3306",
   "schema": "test",
   "listSheetName":"表清单",
-  "excelPath":"%USERPROFILE%\\Desktop",
+  "excelPath":"./result.xlsx",
   "tableColName": "表名",
   "style": {
       "hyperLinkStyle": {
