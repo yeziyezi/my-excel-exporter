@@ -31,7 +31,7 @@ func (eu *ExcelUtil) NewSheet(name string, rows [][]string) {
 
 	var tableName string
 	var sheetName string
-
+	//如果是表清单sheet，name为表清单sheet的名字，否则为表名
 	isListSheet := name == eu.listSheetName
 	//判断是否为表清单sheet
 	if isListSheet {
@@ -69,6 +69,7 @@ func (eu *ExcelUtil) NewSheet(name string, rows [][]string) {
 	} else {
 		cols = eu.tableSheetCols
 	}
+	//填充列名行的值，如果是清单sheet则为第一行，表结构sheet则为第二行
 	for i, name := range cols {
 		eu.excel.SetCellValue(sheetName, string(rune('A'+i))+strconv.Itoa(colTitleRow), name)
 		//列宽首先考虑字段名
