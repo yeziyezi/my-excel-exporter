@@ -2,7 +2,6 @@ package main
 
 import (
 	"db-excel-export-helper/src/util"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"os"
 )
@@ -37,7 +36,7 @@ func main() {
 		go func() {
 			rows := tableQuery.QueryAll(config.Schema, tableName)
 			c <- newSheetParam{tableName: tableName, rows: rows}
-			fmt.Println(tableName + "...ok")
+			util.Log.Infoln(tableName + "...ok")
 		}()
 	}
 	for range tableNames {
@@ -45,8 +44,9 @@ func main() {
 		e.NewSheet(nsp.tableName, nsp.rows)
 	}
 
-	fmt.Printf("%d tables done\n", len(tableNames))
-	fmt.Printf("writing into %s...", config.ExcelPath)
+	util.Log.Infof("%d tables done\n", len(tableNames))
+	util.Log.Infof("writing into %s...", config.ExcelPath)
 	e.End()
-	fmt.Println("success")
+	util.Log.Infoln("success")
+	util.WaitForEnterAndExit()
 }

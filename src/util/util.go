@@ -6,6 +6,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
+	"os"
 	"time"
 )
 
@@ -26,26 +27,35 @@ type Config struct {
 
 func ReadConfig(path string) *Config {
 	nByte, err := ioutil.ReadFile(path)
-	PanicIfErr(err)
+	ExitIfErr(err)
 	var config Config
 	err = json.Unmarshal(nByte, &config)
-	PanicIfErr(err)
+	ExitIfErr(err)
 	return &config
 }
-func PanicIfErr(err error) {
+func ExitIfErr(err error) {
 	if err != nil {
-		panic(err)
+		Log.Fatal(err)
+		WaitForEnterAndExit()
 	}
 }
 func GetDB(config *Config) *sql.DB {
 	confString := fmt.Sprintf("%s:%s@(%s:%s)/%s",
 		config.Username, config.Password, config.Host, config.Port, config.Schema)
 	db, err := sql.Open(config.Driver, confString)
-	PanicIfErr(err)
+	ExitIfErr(err)
 	db.SetConnMaxLifetime(time.Minute * 3)
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(10)
 	err = db.Ping()
-	PanicIfErr(err)
+	ExitIfErr(err)
 	return db
+}
+
+//等待键入回车
+func WaitForEnterAndExit() {
+	fmt.Println("===================")
+	fmt.Println("press ENTER to exit.")
+	_, _ = fmt.Scanf("\n")
+	os.Exit(1)
 }

@@ -18,13 +18,13 @@ type QueryUtil struct {
 func readStringFromFile(sqlFilePath string) string {
 	//读取SQL文件中的SQL语句
 	sqlBytes, err := ioutil.ReadFile(sqlFilePath)
-	PanicIfErr(err)
+	ExitIfErr(err)
 	return string(sqlBytes)
 }
 func buildSqlStatement(sqlString string, db *sql.DB) *sql.Stmt {
 	//构建预编译语句
 	stmt, err := db.Prepare(sqlString)
-	PanicIfErr(err)
+	ExitIfErr(err)
 	return stmt
 }
 func createBuffer(bufLen int) (buf []*[]byte, iBuf []interface{}) {
@@ -64,7 +64,7 @@ func (qu *QueryUtil) QueryAll(param ...interface{}) (result [][]string) {
 func (qu *QueryUtil) QueryAndMap(mapper func([]string), param ...interface{}) {
 	//进行查询
 	rows, err := qu.stmt.Query(param...)
-	PanicIfErr(err)
+	ExitIfErr(err)
 
 	//buf是非线程安全的，需要加锁
 	qu.mu.Lock()
@@ -73,7 +73,7 @@ func (qu *QueryUtil) QueryAndMap(mapper func([]string), param ...interface{}) {
 	for rows.Next() {
 		//its中的元素均为buf元素的指针，数据可直接从buf中取到
 		err = rows.Scan(qu.iBuf...)
-		PanicIfErr(err)
+		ExitIfErr(err)
 		//取buf中的值放入vBuf作为f函数的参数，避免传指针可能出现的问题
 		var vBuf []string
 		for _, bytes := range qu.buf {

@@ -102,7 +102,7 @@ func (eu *ExcelUtil) End() {
 	eu.excel.SetActiveSheet(eu.excel.GetSheetIndex(eu.listSheetName))
 	//保存
 	err := eu.excel.SaveAs(eu.filePath)
-	PanicIfErr(err)
+	ExitIfErr(err)
 }
 
 //@param config *Config 配置项
@@ -139,13 +139,13 @@ func getStringIndex(s string, arr []string) int {
 func initStyle(excel *excelize.File, config *Config) (hyperLinkStyleId, hyperLinkTitleStyleId int) {
 	//预设超链接样式
 	hyperLinkStyle, err := json.Marshal(config.Style["hyperLinkStyle"])
-	PanicIfErr(err)
+	ExitIfErr(err)
 	hyperLinkTitleStyle, err := json.Marshal(config.Style["hyperLinkTitleStyle"])
-	PanicIfErr(err)
+	ExitIfErr(err)
 	hyperLinkStyleId, err = excel.NewStyle(string(hyperLinkStyle))
-	PanicIfErr(err)
+	ExitIfErr(err)
 	hyperLinkTitleStyleId, err = excel.NewStyle(string(hyperLinkTitleStyle))
-	PanicIfErr(err)
+	ExitIfErr(err)
 	return
 }
 
@@ -153,7 +153,7 @@ func initStyle(excel *excelize.File, config *Config) (hyperLinkStyleId, hyperLin
 func (eu *ExcelUtil) setHyperLinksInListSheet() {
 	excel := eu.excel
 	rows, err := excel.Rows(eu.listSheetName)
-	PanicIfErr(err)
+	ExitIfErr(err)
 	//如果一行都没则不处理
 	//第一行是列名，不设置超链接
 	if !rows.Next() {
