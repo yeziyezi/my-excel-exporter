@@ -21,8 +21,9 @@ type Config struct {
 	Schema        string                 `json:"schema"`
 	ListSheetName string                 `json:"listSheetName"` //第一个tab用于存放表名清单
 	ExcelPath     string                 `json:"excelPath"`
-	TableColName  string                 `json:"tableColName"` //表名列的列名
-	Style         map[string]interface{} `json:"style"`        //样式
+	TableColName  string                 `json:"tableColName"`  //表名列的列名
+	ConcurrentNum int                    `json:"ConcurrentNum"` //并发数量，控制查询并发数
+	Style         map[string]interface{} `json:"style"`         //样式
 }
 
 func ReadConfig(path string) *Config {

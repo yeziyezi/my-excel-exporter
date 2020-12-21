@@ -8,6 +8,7 @@
   "listSheetName":"表清单",
   "excelPath":"./result.xlsx",
   "tableColName": "表名",
+  "ConcurrentNum": 50,
   "style": {
       "hyperLinkStyle": {
         "font": {

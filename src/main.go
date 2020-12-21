@@ -31,9 +31,13 @@ func main() {
 		tableNames = append(tableNames, row[0])
 	}
 	c := make(chan newSheetParam)
+	//限制查询并发数避免造成数据库压力
+	queryLimitChan := make(chan int, config.ConcurrentNum)
 	for _, tableName := range tableNames {
 		tableName := tableName
 		go func() {
+			queryLimitChan <- 1
+			defer func() { <-queryLimitChan }()
 			rows := tableQuery.QueryAll(config.Schema, tableName)
 			c <- newSheetParam{tableName: tableName, rows: rows}
 			util.Log.Infoln(tableName + "...ok")

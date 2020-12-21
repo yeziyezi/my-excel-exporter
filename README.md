@@ -22,7 +22,10 @@
  |listSheetName|表清单sheet的名字|表清单|
  |excelPath|保存excel的位置|./result.xlsx|
  |tableColName|表清单sheet中表名所在列的列名|表名|
+ |ConcurrentNum|查询并发数，一般不用修改|50|
  |style|样式|[见sample](./conf/config.json.sample)|
+##### 关于查询并发数
+先前的版本中没有对查询并发数进行限制，如果表数量过多可能会在短时间内对数据库造成较大压力<del>然后被运维找麻烦</del>，因此增加这一配置项，可视实际情况增减，一般使用默认值即可
 ##### 关于style配置
 目前仅支持sample中的两项配置，hyperLinkStyle对应列表页的表名超链接style，hyperLinkTitleStyle对应表结构页的标题超链接style。可参考excelize官方文档进行修改（链接见下方）
 ## 参考资料
